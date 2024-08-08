@@ -1,3 +1,6 @@
+#This code creates a test set, training set, and implements 10 fold cross-validation to develop an accurate prediction model
+
+
 #Setting seed in order to duplicate/verify results
 set.seed(1000)
 
