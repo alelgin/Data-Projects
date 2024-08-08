@@ -1,55 +1,72 @@
-###Partition data into Train and Test
+#Setting seed in order to duplicate/verify results
 set.seed(1000)
-##split.dat=sample(5,nrow(STAT490_Final_Data),replace=TRUE,prob=c(0.8,0.2))
+
+
+#Partitioning data into Train and Test Sets
+
 split.dat=sample(5,nrow(STAT490_Final_Data),replace=TRUE)
 train1=STAT490_Final_Data[split.dat!=2,]
 test1=STAT490_Final_Data[split.dat==2,]
+
+
+#Defining possible final standing outcomes as factors
+
 Relegated1=as.factor(Relegated1)
 Champs_Lg1=as.factor(Champs_Lg1)
 PL_Champ1=as.factor(PL_Champ1)
 Europa_1=as.factor(Europa_1)
 
-###Define Relegation Model
+
+#Define Relegation Models and view the coefficients (based on explanatory variables we chose to investigate)
 relegate.glm=glm(Relegated1~Net_Spend_Millions+Avg_Squad_Age,data=train1,family="binomial")
 summary(relegate.glm)
 
-###Define Champions league Model
+#Define Champions league Model
 CL.glm=glm(Champs_Lg1~Net_Spend_Millions+Avg_Squad_Age,data=train1,family="binomial")
 summary(CL.glm)
 
-###Define EPL Champions  Model
+#Define EPL Champions  Model
 Champ.glm=glm(PL_Champ1~Net_Spend_Millions+Avg_Squad_Age,data=train1,family="binomial")
 summary(Champ.glm)
 
-###Define Europa League Model
+#Define Europa League Model
 europa.glm=glm(Europa_1~Net_Spend_Millions+Avg_Squad_Age,data=train1,family="binomial")
 summary(europa.glm)
 
-###Predict Champions League
+
+#Determining probabilities of outcomes using our partitioned test set(s)
+
+#Predict Champions League
 predictCL=predict(CL.glm,newdata = test1,type="response")
 predictCL.bin=predictCL>0.5
 predictCL.bin
 
-###Predict Relegation
+#Predict Relegation
 predictRel=predict(relegate.glm,newdata = test1,type="response")
 predictRel.bin=predictCL>0.5
 predictRel.bin
 
-##Compare predict to actual
+
+
+#Comparing predictions to actual results
 compareCL=data.frame(actualCL=test1$Champs_Lg1,predictedCL=predictCL.bin)
 compareRel=data.frame(actualRel=test1$Relegated1,predictedRel=predictRel.bin)
 
 compareRelROC=data.frame(predictedRelROC=predictRel, actualRelROC=test1$Relegated1)
 
-###RMSE
-#errorCL=RMSE(predictCL.bin,test1$Champs_Lg1)
+
+
+#Calculating root mean squared error (RMSE) to determine accuracies of models
+errorCL=RMSE(predictCL.bin,test1$Champs_Lg1)
 RMSE.bin=sqrt(mean((predictCL.bin-test1$Champs_Lg1)^2))
 RMSE.bin
 
 RMSE.bin.rel=sqrt(mean((predictRel.bin-test1$Relegated1)^2))
 RMSE.bin.rel
 
-#ROC curves for binary data
+
+
+#Creating plots to show ROC/AUC curve for the binary data
 
 plot(test1$Net_Spend_Millions,predictCL)
 
@@ -66,7 +83,8 @@ ggroc(rocobj, colour = 'steelblue', size = 2) +
   ggtitle(paste0('ROC Curve ', '(AUC = ', auc, ')'))
 
 
-##ROC
+#Another version of the same ROC plot
+
 ROCit_obj <- rocit(score=compareRelROC$predictedRelROC,class=compareRelROC$actualRelROC)
 plot(ROCit_obj)
 
